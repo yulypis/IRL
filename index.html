@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IRL Pro Safe Overlay</title>
+    <title>IRL Pro Bulletproof Overlay</title>
     <style>
         @import url('https://googleapis.com');
         body {
@@ -29,41 +29,47 @@
 <body>
 
     <div id="overlay-container">
-        📍 <span id="display-text">Loading...</span>
+        📍 <span id="display-text">Waiting for GPS...</span>
     </div>
 
     <script>
-        async function updateOverlay() {
-            if (!navigator.geolocation) return;
+        const UPDATE_INTERVAL = 600000; // 10 minutes
+
+        function updateOverlay() {
+            if (!navigator.geolocation) {
+                document.getElementById('display-text').innerText = "GPS Not Supported";
+                return;
+            }
 
             navigator.geolocation.getCurrentPosition(async (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
 
                 try {
-                    // 100% free public endpoints. No registration or keys required at all.
-                    const geoUrl = `https://bigdatacloud.net{lat}&longitude=${lon}&localityLanguage=en`;
-                    const weatherUrl = `https://open-meteo.com{lat}&longitude=${lon}&current_weather=true`;
+                    // Pulls both weather data and location string in one single request 
+                    const response = await fetch(`https://wttr.in{lat},${lon}?format=j1`);
+                    const data = await response.json();
 
-                    const [geoRes, weatherRes] = await Promise.all([fetch(geoUrl), fetch(weatherUrl)]);
-                    const geoData = await geoRes.json();
-                    const weatherData = await weatherRes.json();
-
-                    // Grabs only the city/settlement name and the temperature
-                    const city = geoData.locality || geoData.city || "Unknown";
-                    const temp = Math.round(weatherData.current_weather.temperature);
+                    // Grabs the town or area name
+                    const city = data.nearest_weather[0].areaName[0].value;
+                    // Grabs the temperature in Celsius
+                    const temp = data.current_condition[0].temp_C;
 
                     document.getElementById('display-text').innerText = `${city} | ${temp}°C`;
-                } catch (e) {
-                    document.getElementById('display-text').innerText = "Update Error";
+
+                } catch (error) {
+                    // Shows the real technical block on screen if it breaks again
+                    document.getElementById('display-text').innerText = "API Error: " + error.message;
                 }
-            }, (err) => {
-                document.getElementById('display-text').innerText = "Turn on Phone GPS";
-            }, { enableHighAccuracy: false });
+            }, (error) => {
+                document.getElementById('display-text').innerText = "Allow Location Access";
+            }, {
+                enableHighAccuracy: false // Keeps battery use low
+            });
         }
 
         updateOverlay();
-        setInterval(updateOverlay, 600000); // Automatically updates every 10 minutes
+        setInterval(updateOverlay, UPDATE_INTERVAL);
     </script>
 
 </body>
