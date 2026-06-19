@@ -33,7 +33,7 @@
     </div>
 
     <script>
-        // Paste your actual OpenWeather API key inside these quotes
+        // Keep your active OpenWeather API key here
         const API_KEY = "9e44771732fdefb8bfefb9602d58006b"; 
         
         const UPDATE_INTERVAL = 600000; // 10 minutes
@@ -48,8 +48,7 @@
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
 
-                // CORRECTED: Fully qualified URL structure with the required /data/2.5/weather path
-                const url = "https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&units=metric&appid=" + API_KEY;
+                const url = "https://openweathermap.org" + lat + "&lon=" + lon + "&units=metric&appid=" + API_KEY;
                 
                 try {
                     const response = await fetch(url);
@@ -58,7 +57,26 @@
                     if (response.ok) {
                         const city = data.name;
                         const temp = Math.round(data.main.temp);
-                        document.getElementById('display-text').innerText = city + " | " + temp + "°C";
+                        const description = data.weather[0].main; 
+                        
+                        // 1. Convert Country Code (e.g., 'IL') into a Flag Emoji
+                        const countryCode = data.sys.country; 
+                        const flagEmoji = countryCode.toUpperCase().replace(/./g, char => 
+                            String.fromCodePoint(char.charCodeAt(0) + 127397)
+                        );
+
+                        // 2. Map Weather Condition to an Emoji
+                        let weatherEmoji = "🌤️"; 
+                        const status = description.toLowerCase();
+                        if (status.includes("clear")) weatherEmoji = "☀️";
+                        else if (status.includes("cloud")) weatherEmoji = "☁️";
+                        else if (status.includes("rain") || status.includes("drizzle")) weatherEmoji = "🌧️";
+                        else if (status.includes("thunder")) weatherEmoji = "⛈️";
+                        else if (status.includes("snow")) weatherEmoji = "❄️";
+                        else if (status.includes("mist") || status.includes("fog")) weatherEmoji = "🌫️";
+
+                        // 3. Update the text display string
+                        document.getElementById('display-text').innerText = flagEmoji + " " + city + " | " + temp + "°C | " + weatherEmoji + " " + description;
                     } else {
                         document.getElementById('display-text').innerText = "API Error: (" + response.status + ") " + data.message;
                     }
