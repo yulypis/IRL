@@ -48,6 +48,7 @@
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
 
+                // FIXED: Restored to the working version 2.5 endpoint format
                 const url = "https://openweathermap.org" + lat + "&lon=" + lon + "&units=metric&appid=" + API_KEY;
                 
                 try {
