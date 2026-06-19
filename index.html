@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRL Pro Privacy Overlay</title>
+    <style>
+        @import url('https://googleapis.com');
+        body {
+            margin: 0;
+            padding: 10px;
+            overflow: hidden;
+            background-color: transparent; /* Makes background clear in IRL Pro */
+        }
+        #overlay-container {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.65); /* Sleek semi-transparent dark background */
+            color: #ffffff;
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            border-left: 5px solid #00ffcc; /* Neon accent bar */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+        }
+        .icon {
+            margin-right: 12px;
+            font-size: 28px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="overlay-container">
+        <span class="icon">📍</span>
+        <span id="display-text">Loading Location...</span>
+    </div>
+
+    <script>
+        // REPLACE THIS WITH YOUR FREE KEY FROM openweathermap.org
+        const API_KEY = 'YOUR_OPENWEATHER_API_KEY_HERE'; 
+        
+        // Update interval in milliseconds (600000 ms = 10 minutes)
+        const UPDATE_INTERVAL = 600000; 
+
+        function updateOverlay() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(async (position) => {
+                    const lat = position.coords.latitude;
+                    const lon = position.coords.longitude;
+
+                    try {
+                        // Fetches data from OpenWeather API using the coordinates
+                        const response = await fetch(`https://openweathermap.org{lat}&lon=${lon}&units=metric&appid=${API_KEY}`);
+                        const data = await response.json();
+
+                        if (response.ok) {
+                            const cityName = data.name;
+                            const temp = Math.round(data.main.temp);
+                            const description = data.weather[0].main;
+
+                            // Outputs ONLY the city name and weather data to the screen
+                            document.getElementById('display-text').innerText = `${cityName} | ${temp}°C | ${description}`;
+                        } else {
+                            document.getElementById('display-text').innerText = "API Error";
+                        }
+                    } catch (error) {
+                        document.getElementById('display-text').innerText = "Network Error";
+                    }
+                }, (error) => {
+                    document.getElementById('display-text').innerText = "GPS Permission Denied";
+                }, {
+                    enableHighAccuracy: false // Uses lower accuracy cell tower data to save battery & protect privacy
+                });
+            } else {
+                document.getElementById('display-text').innerText = "GPS Not Supported";
+            }
+        }
+
+        // Run immediately on load, then repeat every 10 minutes
+        updateOverlay();
+        setInterval(updateOverlay, UPDATE_INTERVAL);
+    </script>
+
+</body>
+</html>
