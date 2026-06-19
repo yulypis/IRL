@@ -79,7 +79,7 @@
                         else if (status.includes("mist") || status.includes("fog")) weatherEmoji = "🌫️";
 
                         // 3. Update the text display string
-                        document.getElementById('display-text').innerText = flagEmoji + " " + city + " | " + temp + "°C | " + weatherEmoji + " " + description;
+                        document.getElementById('display-text').innerText =  city + " " + flagEmoji + " | " + temp + "°C | " + weatherEmoji + " " + description;
                     } else {
                         document.getElementById('display-text').innerText = "API Error: (" + response.status + ") " + data.message;
                     }
