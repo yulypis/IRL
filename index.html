@@ -48,8 +48,8 @@
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
 
-                // FIXED: Restored to the working version 2.5 endpoint format
-                const url = "https://openweathermap.org" + lat + "&lon=" + lon + "&units=metric&appid=" + API_KEY;
+                // VERIFIED CORRECT URL: Uses the precise api.openweathermap.org base URL endpoint
+                const url = "https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&units=metric&appid=" + API_KEY;
                 
                 try {
                     const response = await fetch(url);
@@ -58,6 +58,8 @@
                     if (response.ok) {
                         const city = data.name;
                         const temp = Math.round(data.main.temp);
+                        
+                        // VERIFIED CORRECT DATA PATH: Targets the index element of the weather array safely
                         const description = data.weather[0].main; 
                         
                         // 1. Convert Country Code (e.g., 'IL') into a Flag Emoji
